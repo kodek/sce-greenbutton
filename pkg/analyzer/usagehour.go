@@ -1,9 +1,10 @@
 package analyzer
 
 import (
-	"github.com/kodek/greenbutton/pkg/csvparser"
 	"sort"
 	"time"
+
+	"github.com/kodek/sce-greenbutton/pkg/csvparser"
 )
 
 type UsageHour struct {

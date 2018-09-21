@@ -3,7 +3,7 @@ package costcalculator
 import (
 	"time"
 
-	"github.com/kodek/greenbutton/pkg/analyzer"
+	"github.com/kodek/sce-greenbutton/pkg/analyzer"
 )
 
 const TIER1_PER_KWH = 0.18

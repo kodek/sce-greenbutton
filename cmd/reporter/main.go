@@ -5,10 +5,10 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/kodek/greenbutton/pkg/costcalculator"
+	"github.com/kodek/sce-greenbutton/pkg/costcalculator"
 
-	"github.com/kodek/greenbutton/pkg/analyzer"
-	"github.com/kodek/greenbutton/pkg/csvparser"
+	"github.com/kodek/sce-greenbutton/pkg/analyzer"
+	"github.com/kodek/sce-greenbutton/pkg/csvparser"
 )
 
 func main() {
