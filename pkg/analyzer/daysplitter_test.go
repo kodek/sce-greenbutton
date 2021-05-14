@@ -24,7 +24,7 @@ func TestSplitByDay_ConvertsToDay(t *testing.T) {
 	assert.Equal(t, in, got[0].DataPoints)
 }
 
-func TestSplitByDay_MultipleHours_SumsUsage(t *testing.T) {
+func TestSplitByDay_MultipleHours_AggregatesIntoSingleElement(t *testing.T) {
 	in := []UsageHour{
 		{
 			StartTime: time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
