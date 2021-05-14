@@ -83,12 +83,12 @@ const HEADER = "Energy consumption time period,Usage(Real energy in kilowatt-hou
 // "2017-09-01 23:00:00 to 2017-09-02 00:00:00",
 func parseTimePeriod(timePeriod string) (time.Time, time.Time, error) {
 	noQuotes := removeQuotes(timePeriod)
-	split := strings.Split(noQuotes, "\xa0to ")
+	split := strings.Split(noQuotes, "to")
 	if len(split) != 2 {
 		return time.Time{}, time.Time{}, errors.New(fmt.Sprintf("Expected time period with 2 dates, but got %d", len(split)))
 	}
-	beforeStr := split[0]
-	afterStr := split[1]
+	beforeStr := strings.TrimSpace(split[0])
+	afterStr := strings.TrimSpace(split[1])
 
 	before, err := parseTime(beforeStr)
 	if err != nil {
