@@ -30,7 +30,13 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Read %d hours (%d days).\n", len(csv), len(csv)/24)
+	hours, err := analyzer.AggregateIntoHourWindows(csv)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Read %d data points (%d days).\n", len(csv), len(hours)/24)
+	fmt.Printf("First date: %+v\n", hours[0])
+	fmt.Printf("Last date: %+v\n", hours[len(hours)-1])
 
 	addCarSimulation(csv)
 
@@ -41,11 +47,6 @@ func main() {
 	fmt.Printf("Total annual usage: %.2f kWh.\n\n", annualUsage)
 
 	// Split into months
-	hours, err := analyzer.ParseIntoHours(csv)
-	if err != nil {
-		panic(err)
-	}
-
 	days, err := analyzer.SplitByDay(hours)
 	if err != nil {
 		panic(err)
@@ -81,7 +82,8 @@ func main() {
 	fmt.Printf("Total DOMESTIC: $%.2f.\n", totalDomesticCost)
 	fmt.Printf("Total TOU-D-A: $%.2f.\n", totalTouDACost)
 
-	analyzer.CalculateAverageUsageByHour(months)
+	analyzer.CalculateAverageUsageByHour(months, w)
+	_ = w.Flush()
 }
 func addCarSimulation(f csvparser.CsvFile) {
 	for i, hr := range f {

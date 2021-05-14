@@ -1,8 +1,11 @@
 package analyzer
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
-func CalculateAverageUsageByHour(in []UsageMonth) {
+func CalculateAverageUsageByHour(in []UsageMonth, w io.Writer) {
 	usageByHour := make(map[int]float64)
 	countByHour := make(map[int]int)
 	for _, m := range in {
@@ -14,8 +17,9 @@ func CalculateAverageUsageByHour(in []UsageMonth) {
 		}
 	}
 
+	_, _ = fmt.Fprintln(w, "Hour of day\tData Points\tAverage Usage\t")
 	for i := 0; i < 24; i++ {
 		ave := usageByHour[i] / float64(countByHour[i])
-		fmt.Printf("%.2f\n", ave)
+		_, _ = fmt.Fprintf(w, "%d\t%d\t%.2f\t\n", i, countByHour[i], ave)
 	}
 }
