@@ -53,7 +53,7 @@ func parseHourConsumption(line string, lineNumber int) (*CsvRow, error) {
 			LineNumber: lineNumber,
 		}
 	}
-	err = assertTimePeriodIsOneHour(tStart, tEnd)
+	err = checkPeriodIs15Minutes(tStart, tEnd)
 	if err != nil {
 		return nil, &LineParsingError{
 			Cause:      err,
@@ -108,10 +108,10 @@ func parseTime(t string) (time.Time, error) {
 	return time.ParseInLocation("2006-01-02 15:04:05", t, time.UTC)
 }
 
-func assertTimePeriodIsOneHour(before time.Time, after time.Time) error {
+func checkPeriodIs15Minutes(before time.Time, after time.Time) error {
 	diff := after.Sub(before)
-	if diff != 1*time.Hour {
-		return errors.New(fmt.Sprintf("Expected time period of 1 hour between %s and %s, but got %s.", before, after, diff))
+	if diff != 15*time.Minute {
+		return errors.New(fmt.Sprintf("Expected time period of 15 minutes between %s and %s, but got %s.", before, after, diff))
 	}
 	return nil
 }
