@@ -67,7 +67,15 @@ func main() {
 		touDACost := costcalculator.CalculateTouDACostForMonth(month)
 		totalTouDACost += touDACost
 
-		_, _ = fmt.Fprintf(w, "%d-%d\t%d\t%.2f\t%.2f\t$%.2f\t$%.2f\t\n", month.Month.Year(), month.Month.Month(), len(month.UsageDays), month.UsageKwh, month.AverageDailyUsageKwh(), domesticCost, touDACost)
+		_, _ = fmt.Fprintf(w,
+			"%d-%d\t%d\t%.2f\t%.2f\t$%.2f\t$%.2f\t\n",
+			month.Month.Year(),
+			month.Month.Month(),
+			len(month.UsageDays),
+			month.UsageKwh,
+			month.AverageDailyUsageKwh(),
+			domesticCost,
+			touDACost)
 	}
 	_ = w.Flush()
 	fmt.Printf("Total DOMESTIC: $%.2f.\n", totalDomesticCost)
