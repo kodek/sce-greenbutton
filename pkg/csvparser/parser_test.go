@@ -15,7 +15,7 @@ func TestOneDayHasFifteenMinutePoints(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, 24*4, len(got))
+	assert.Len(t, got, 24*4)
 }
 
 func TestOneDayAt1KwIs24Kwh(t *testing.T) {
@@ -38,7 +38,7 @@ func TestTwoDaysIgnoresIntermediateHeaders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, 24*4*2, len(got))
+	assert.Len(t, got, 24*4*2)
 
 	sum := 0.0
 	for _, p := range got {
@@ -55,7 +55,7 @@ func TestSingleLineParsesIntoTimesAndUsage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, 1, len(got))
+	assert.Len(t, got, 1)
 	assert.Equal(t, time.Date(2020, 01, 01, 00, 00, 0, 0, time.Local), got[0].StartTime)
 	assert.Equal(t, time.Date(2020, 01, 01, 00, 15, 0, 0, time.Local), got[0].EndTime)
 	assert.Equal(t, 1234.0, got[0].UsageKwh)
