@@ -77,7 +77,7 @@ func parseHourConsumption(line string, lineNumber int) (*CsvRow, error) {
 }
 
 const QUOTE = "\""
-const HEADER = "Energy consumption time period,Usage(Real energy in kilowatt-hours),Reading quality\r"
+const HEADER = "Energy consumption time period,Usage(Real energy in kilowatt-hours),Reading quality"
 
 // Parses a string in the format of (quotes included):
 // "2017-09-01 23:00:00 to 2017-09-02 00:00:00",
