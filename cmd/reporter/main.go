@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -11,11 +12,14 @@ import (
 	"github.com/kodek/sce-greenbutton/pkg/csvparser"
 )
 
-func main() {
-	filePath := "/Users/hcosi/Downloads/Marter - SCE_Usage_3-027-2852-20_08-31-17_to_08-31-18.csv"
+var inputFilePath = flag.String("input_file_path", "", "Path to input CSV file from GreenButton.")
 
-	//filePath := "/Users/hcosi/Downloads/sce marter partial bill (2018 01 to 08).csv"
-	file, err := ioutil.ReadFile(filePath)
+func main() {
+	flag.Parse()
+	if *inputFilePath == "" {
+		panic("Must specify --input_file_path")
+	}
+	file, err := ioutil.ReadFile(*inputFilePath)
 	if err != nil {
 		panic(err)
 	}
