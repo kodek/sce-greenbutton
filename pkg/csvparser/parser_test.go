@@ -15,7 +15,7 @@ func TestOneDayHasFifteenMinutePoints(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, len(got), 24*4)
+	assert.Equal(t, 24*4, len(got))
 }
 
 func TestOneDayAt1KwIs24Kwh(t *testing.T) {
@@ -29,10 +29,10 @@ func TestOneDayAt1KwIs24Kwh(t *testing.T) {
 		sum += p.UsageKwh
 	}
 
-	assert.Equal(t, sum, 24.0)
+	assert.Equal(t, 24.0, sum)
 }
 
-func TestSingleLineParsedCorrectly(t *testing.T) {
+func TestSingleLineParsesIntoTimesAndUsage(t *testing.T) {
 	file := addHeaderTo([]string{
 		`"2020-01-01 00:00:00 to 2020-01-01 00:15:00","1234",""`,
 	})
@@ -41,9 +41,9 @@ func TestSingleLineParsedCorrectly(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, len(got), 1)
-	assert.Equal(t, got[0].StartTime, time.Date(2020, 01, 01, 00, 00, 0, 0, time.Local))
-	assert.Equal(t, got[0].EndTime, time.Date(2020, 01, 01, 00, 15, 0, 0, time.Local))
-	assert.Equal(t, got[0].UsageKwh, 1234.0)
+	assert.Equal(t, time.Date(2020, 01, 01, 00, 00, 0, 0, time.Local), got[0].StartTime)
+	assert.Equal(t, time.Date(2020, 01, 01, 00, 15, 0, 0, time.Local), got[0].EndTime)
+	assert.Equal(t, 1234.0, got[0].UsageKwh)
 }
 
 func readOrDie(file string) string {
