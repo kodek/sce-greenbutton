@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"text/tabwriter"
 	"time"
 
 	"github.com/kodek/sce-greenbutton/pkg/costcalculator"
@@ -56,7 +58,8 @@ func main() {
 
 	totalDomesticCost := 0.0
 	totalTouDACost := 0.0
-	fmt.Println("Month, Days, Usage, AveDailyUsage, DOMESTIC, TOU-D-A")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	_, _ = fmt.Fprintln(w, "Month\tDays\tUsage\tAveDailyUsage\tDOMESTIC\tTOU-D-A\t")
 	for _, month := range months {
 		domesticCost := costcalculator.CalculateDomesticCost(month)
 		totalDomesticCost += domesticCost
@@ -64,8 +67,9 @@ func main() {
 		touDACost := costcalculator.CalculateTouDACostForMonth(month)
 		totalTouDACost += touDACost
 
-		fmt.Printf("%d-%d, %d, %.2f,%.2f, $%.2f, $%.2f\n", month.Month.Year(), month.Month.Month(), len(month.UsageDays), month.UsageKwh, month.AverageDailyUsageKwh(), domesticCost, touDACost)
+		_, _ = fmt.Fprintf(w, "%d-%d\t%d\t%.2f\t%.2f\t$%.2f\t$%.2f\t\n", month.Month.Year(), month.Month.Month(), len(month.UsageDays), month.UsageKwh, month.AverageDailyUsageKwh(), domesticCost, touDACost)
 	}
+	_ = w.Flush()
 	fmt.Printf("Total DOMESTIC: $%.2f.\n", totalDomesticCost)
 	fmt.Printf("Total TOU-D-A: $%.2f.\n", totalTouDACost)
 
