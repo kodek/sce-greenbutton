@@ -18,7 +18,7 @@ func ParseIntoHours(parsedFile csvparser.CsvFile) (SortedUsageHours, error) {
 	out := make([]UsageHour, len(parsedFile))
 	for i, v := range parsedFile {
 		out[i] = UsageHour{
-			StartTime: v.StartOfHour,
+			StartTime: v.StartTime,
 			UsageKwh:  v.UsageKwh,
 		}
 	}

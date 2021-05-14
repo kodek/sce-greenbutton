@@ -76,7 +76,8 @@ Energy consumption time period,Usage(Real energy in kilowatt-hours),Reading qual
 */
 
 type CsvRow struct {
-	StartOfHour    time.Time
+	StartTime      time.Time
+	EndTime        time.Time
 	UsageKwh       float64
 	ReadingQuality string
 }

@@ -71,7 +71,8 @@ func parseHourConsumption(line string, lineNumber int) (*CsvRow, error) {
 	}
 
 	return &CsvRow{
-		StartOfHour:    tStart,
+		StartTime:      tStart,
+		EndTime:        tEnd,
 		UsageKwh:       usageNum,
 		ReadingQuality: readingQuality}, nil
 }
@@ -105,7 +106,7 @@ func parseTimePeriod(timePeriod string) (time.Time, time.Time, error) {
 // parseTime parses a date and time string and returns a local time.Time object
 // t: a string in the format of "2006-01-02 15:04:05
 func parseTime(t string) (time.Time, error) {
-	return time.ParseInLocation("2006-01-02 15:04:05", t, time.UTC)
+	return time.ParseInLocation("2006-01-02 15:04:05", t, time.Local)
 }
 
 func checkPeriodIs15Minutes(before time.Time, after time.Time) error {

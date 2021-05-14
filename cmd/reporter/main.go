@@ -85,8 +85,8 @@ func main() {
 }
 func addCarSimulation(f csvparser.CsvFile) {
 	for i, hr := range f {
-		if hr.StartOfHour.Before(time.Date(2018, 07, 10, 0, 0, 0, 0, time.UTC)) {
-			h := hr.StartOfHour.Hour()
+		if hr.StartTime.Before(time.Date(2018, 07, 10, 0, 0, 0, 0, time.UTC)) {
+			h := hr.StartTime.Hour()
 			if !(h >= 1 && h < 22) {
 				f[i].UsageKwh += 8
 			}
