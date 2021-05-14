@@ -32,6 +32,21 @@ func TestOneDayAt1KwIs24Kwh(t *testing.T) {
 	assert.Equal(t, 24.0, sum)
 }
 
+func TestTwoDaysIgnoresIntermediateHeaders(t *testing.T) {
+	got, err := Parse(readOrDie("two_days_constant_power.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 24*4*2, len(got))
+
+	sum := 0.0
+	for _, p := range got {
+		sum += p.UsageKwh
+	}
+	assert.Equal(t, 48.0, sum)
+}
+
 func TestSingleLineParsesIntoTimesAndUsage(t *testing.T) {
 	file := addHeaderTo([]string{
 		`"2020-01-01 00:00:00 to 2020-01-01 00:15:00","1234",""`,
