@@ -55,7 +55,7 @@ func TestSingleLineParsesIntoTimesAndUsage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, len(got), 1)
+	assert.Equal(t, 1, len(got))
 	assert.Equal(t, time.Date(2020, 01, 01, 00, 00, 0, 0, time.Local), got[0].StartTime)
 	assert.Equal(t, time.Date(2020, 01, 01, 00, 15, 0, 0, time.Local), got[0].EndTime)
 	assert.Equal(t, 1234.0, got[0].UsageKwh)
