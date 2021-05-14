@@ -82,6 +82,10 @@ type CsvRow struct {
 	ReadingQuality string
 }
 
+func (r *CsvRow) Duration() time.Duration {
+	return r.EndTime.Sub(r.StartTime)
+}
+
 type CsvFile []CsvRow
 
 func Parse(fileIn string) (CsvFile, error) {

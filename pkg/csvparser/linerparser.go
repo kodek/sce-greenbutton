@@ -106,15 +106,22 @@ func parseTimePeriod(timePeriod string) (time.Time, time.Time, error) {
 // parseTime parses a date and time string and returns a local time.Time object
 // t: a string in the format of "2006-01-02 15:04:05
 func parseTime(t string) (time.Time, error) {
-	return time.ParseInLocation("2006-01-02 15:04:05", t, time.Local)
+	return time.ParseInLocation("2006-01-02 15:04:05", t, time.UTC)
 }
 
 func checkPeriodIs15Minutes(before time.Time, after time.Time) error {
-	diff := after.Sub(before)
-	if diff != 15*time.Minute {
-		return errors.New(fmt.Sprintf("Expected time period of 15 minutes between %s and %s, but got %s.", before, after, diff))
+	expectedDiff := 15 * time.Minute
+
+	_, beforeOffset := before.Zone()
+	_, afterOffset := before.Add(expectedDiff).Zone()
+	hourOffset := time.Duration(afterOffset-beforeOffset) * time.Second
+
+	diff := after.Sub(before) + hourOffset
+	if diff == expectedDiff {
+		return nil
 	}
-	return nil
+
+	return errors.New(fmt.Sprintf("expected time period of 15 minutes between %s and %s, but got %s (with tz diff %s)", before, after, diff, hourOffset))
 }
 
 func parseUsage(usageStr string) (float64, error) {

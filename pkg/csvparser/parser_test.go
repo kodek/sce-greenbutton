@@ -56,11 +56,32 @@ func TestSingleLineParsesIntoTimesAndUsage(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Len(t, got, 1)
-	assert.Equal(t, time.Date(2020, 01, 01, 00, 00, 0, 0, time.Local), got[0].StartTime)
-	assert.Equal(t, time.Date(2020, 01, 01, 00, 15, 0, 0, time.Local), got[0].EndTime)
+	assert.Equal(t, time.Date(2020, 01, 01, 00, 00, 0, 0, time.UTC), got[0].StartTime)
+	assert.Equal(t, time.Date(2020, 01, 01, 00, 15, 0, 0, time.UTC), got[0].EndTime)
 	assert.Equal(t, 1234.0, got[0].UsageKwh)
 }
 
+func TestDurationWorksOnSpringDaylightSavings(t *testing.T) {
+	file := addHeaderTo([]string{
+		`"2021-03-14 01:45:00 to 2021-03-14 02:00:00","1",""`,
+	})
+	got, err := Parse(file)
+	assert.NoError(t, err)
+
+	assert.Len(t, got, 1)
+	assert.Equal(t, 15*time.Minute, got[0].Duration())
+}
+
+func TestDurationWorksOnFallDaylightSavings(t *testing.T) {
+	file := addHeaderTo([]string{
+		`"2020-11-01 01:45:00 to 2020-11-01 02:00:00","1.0",""`,
+	})
+	got, err := Parse(file)
+	assert.NoError(t, err)
+
+	assert.Len(t, got, 1)
+	assert.Equal(t, 15*time.Minute, got[0].Duration())
+}
 func readOrDie(file string) string {
 	fileBytes, err := ioutil.ReadFile("testdata/" + file)
 	if err != nil {
