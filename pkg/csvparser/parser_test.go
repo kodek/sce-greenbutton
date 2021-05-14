@@ -62,7 +62,7 @@ func TestSingleLineParsesIntoTimesAndUsage(t *testing.T) {
 }
 
 func readOrDie(file string) string {
-	fileBytes, err := ioutil.ReadFile(file)
+	fileBytes, err := ioutil.ReadFile("testdata/" + file)
 	if err != nil {
 		panic(err)
 	}
