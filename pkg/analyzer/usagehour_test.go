@@ -30,7 +30,6 @@ func TestConvertsDataPointToUsageHour(t *testing.T) {
 }
 
 func TestTwoDataPointsInOneHourAggregated(t *testing.T) {
-
 	parsed := csvparser.CsvFile{
 		csvparser.NewRowWith15MinuteDuration(now, 1),
 		csvparser.NewRowWith15MinuteDuration(now.Add(15*time.Minute), 2),
@@ -58,4 +57,17 @@ func TestWindowOverlapsHourFails(t *testing.T) {
 	if assert.Error(t, err) {
 		assert.Contains(t, err.Error(), "within the same hour")
 	}
+}
+
+func TestUsageHour_EndTime_ReturnsEndTimeFromLastPoint(t *testing.T) {
+	parsed := csvparser.CsvFile{
+		csvparser.NewRowWith15MinuteDuration(now, 1),
+		csvparser.NewRowWith15MinuteDuration(now.Add(15*time.Minute), 2),
+	}
+
+	got, err := AggregateIntoHourWindows(parsed)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 1, len(got))
+	assert.Equal(t, now.Add(30*time.Minute), got[0].EndTime())
 }

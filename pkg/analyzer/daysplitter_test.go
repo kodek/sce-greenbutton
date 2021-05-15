@@ -60,3 +60,20 @@ func TestSplitByDay_DifferentDays_AggregatesSeparately(t *testing.T) {
 	assert.Equal(t, 3.0, got[0].UsageKwh)
 	assert.Equal(t, 4.0, got[1].UsageKwh)
 }
+
+func TestUsageDay_EndTime_ReturnsEndFromLastDataPoint(t *testing.T) {
+	in, err := AggregateIntoHourWindows([]csvparser.CsvRow{
+		csvparser.NewRowWith15MinuteDuration(
+			time.Date(2020, 01, 01, 12, 00, 00, 0, time.UTC),
+			3.0),
+		csvparser.NewRowWith15MinuteDuration(
+			time.Date(2020, 01, 01, 15, 00, 00, 0, time.UTC),
+			4.0)})
+	assert.NoError(t, err)
+
+	got, err := SplitByDay(in)
+	assert.NoError(t, err)
+
+	assert.Len(t, got, 1)
+	assert.Equal(t, time.Date(2020, 01, 01, 15, 15, 0, 0, time.UTC), got[0].EndTime())
+}

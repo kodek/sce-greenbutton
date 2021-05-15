@@ -8,6 +8,10 @@ type UsageDay struct {
 	UsageKwh   float64
 }
 
+func (d *UsageDay) EndTime() time.Time {
+	return d.DataPoints[len(d.DataPoints)-1].EndTime()
+}
+
 type SortedUsageDays []UsageDay
 
 func SplitByDay(in SortedUsageHours) (SortedUsageDays, error) {
