@@ -1,83 +1,189 @@
 package costcalculator
 
 import (
+	"math"
 	"time"
 
 	"github.com/kodek/sce-greenbutton/pkg/analyzer"
 )
 
-const SUMMER_SUPER_OFF_PER_KWH = 0.12
-const SUMMER_OFF_PER_KWH = 0.28
-const SUMMER_ON_PER_KWH = 0.48
+type CostPeriod float64
 
-const WINTER_SUPER_OFF_PER_KWH = 0.13
-const WINTER_OFF_PER_KWH = 0.27
-const WINTER_ON_PER_KWH = 0.36
+const (
+	SummerSuperOffPeak CostPeriod = iota
+	SummerOffPeak
+	SummerOnPeak
 
-//const DAILY_BASIC_CHARGE = 0.03
-//const MINIMUM_DAILY_CHARGE = 0.34
-const BASELINE_CREDIT_PER_KWH = 0.08
+	WinterSuperOffPeak
+	WinterOffPeak
+	WinterOnPeak
+)
 
-//func CalculateTouDANonBypassableChargesForMonth(m analyzer.UsageMonth) float64 {
-//	cumulativeCost := 0.0
-//	for _, d := range m.UsageDays {
-//		cumulativeCost += 0.03
-//		if d.UsageKwh < MINIMUM_DAILY_CHARGE {
-//			dailyCost := touDACostForDay(d)
-//			if dailyCost > 0 {
-//				cumulativeCost += MINIMUM_DAILY_CHARGE - dailyCost
-//			} else {
-//				cumulativeCost += MINIMUM_DAILY_CHARGE
-//			}
-//		}
-//	}
-//	return cumulativeCost
-//}
+func (cost *CostPeriod) Cost() float64 {
+	switch *cost {
+	case SummerOffPeak:
+		return 0.34
+	case SummerOnPeak:
+		return 0.61
+	case SummerSuperOffPeak:
+		return 0.16
+	case WinterOffPeak:
+		return 0.30
+	case WinterOnPeak:
+		return 0.40
+	case WinterSuperOffPeak:
+		return 0.16
+	}
+	panic("unexpected")
+}
 
-func CalculateTouDACostForMonth(days []analyzer.UsageDay) float64 {
-	cumulativeCost := 0.0
-	cumulativeKwh := 0.0
+func (cost *CostPeriod) Name() string {
+	switch *cost {
+	case SummerOffPeak:
+		return "Off-Peak (Summer)"
+	case SummerOnPeak:
+		return "On-Peak (Summer)"
+	case SummerSuperOffPeak:
+		return "Super Off-Peak (Summer)"
+	case WinterOffPeak:
+		return "Off-Peak (Winter)"
+	case WinterOnPeak:
+		return "On-Peak (Winter)"
+	case WinterSuperOffPeak:
+		return "Super Off-Peak (Winter)"
+	}
+	panic("unexpected")
+}
+
+const BaselineCreditPerKwh = -0.07848
+const NonBypassableChargePerKwh = 0.01362
+
+func CalculateTouDACostForDays(days []analyzer.UsageDay) TouBillSummary {
+
+	bucket := TouBillSummary{
+		days:             days,
+		usageKwhByPeriod: make(map[CostPeriod]float64),
+		hoursByPeriod:    make(map[CostPeriod]int),
+		energyImported:   0,
+
+		weekdays: 0,
+		weekends: 0,
+		holidays: 0,
+	}
+
 	for _, d := range days {
-		cumulativeCost += touDACostForDay(d)
-		cumulativeKwh += d.UsageKwh
+		bucket.add(d)
 	}
 
-	baselineAllocation := baselineAllocationForDays(days)
-	if cumulativeKwh > baselineAllocation {
-		cumulativeCost -= baselineAllocation * BASELINE_CREDIT_PER_KWH
-	} else {
-		cumulativeCost -= cumulativeKwh * BASELINE_CREDIT_PER_KWH
-	}
-	return cumulativeCost
+	return bucket
 }
 
-func touDACostForDay(d analyzer.UsageDay) float64 {
-	cumulativeCost := 0.0
+type TouBillSummary struct {
+	days             []analyzer.UsageDay
+	usageKwhByPeriod map[CostPeriod]float64
+	hoursByPeriod    map[CostPeriod]int
+	energyExported   float64
+	energyImported   float64
+
+	weekdays int
+	weekends int
+	holidays int
+}
+
+func (b *TouBillSummary) NetMeteredCost() float64 {
+	total := 0.0
+	for period, usage := range b.usageKwhByPeriod {
+		total += usage * period.Cost()
+	}
+	return total
+}
+
+func (b *TouBillSummary) NetEnergyUsage() float64 {
+	total := 0.0
+	for _, usage := range b.usageKwhByPeriod {
+		total += usage
+	}
+	return total
+}
+
+func (b *TouBillSummary) UsageByPeriod() map[CostPeriod]float64 {
+	return b.usageKwhByPeriod
+}
+
+func (b *TouBillSummary) EnergyExported() float64 {
+	return b.energyExported
+}
+
+func (b *TouBillSummary) EnergyImported() float64 {
+	return b.energyImported
+}
+
+func (b *TouBillSummary) NonBypassableCharges() float64 {
+	return b.energyImported * NonBypassableChargePerKwh
+}
+
+func (b *TouBillSummary) MaxBaselineAllowance() float64 {
+	total := 0.0
+	for _, p := range b.days {
+		total += GetDailyAllocation(p.Day)
+	}
+	return total
+}
+
+func (b *TouBillSummary) BaselineCredit() float64 {
+	actualUsage := b.NetEnergyUsage()
+	maxBaseline := b.MaxBaselineAllowance()
+
+	absActualUsage := math.Abs(actualUsage)
+	absAllowance := math.Min(absActualUsage, maxBaseline)
+
+	return math.Copysign(absAllowance, actualUsage) * BaselineCreditPerKwh
+}
+
+func (b *TouBillSummary) AverageDailyUsage() float64 {
+	return float64(b.NetEnergyUsage()) / float64(len(b.days))
+}
+
+func (b *TouBillSummary) add(d analyzer.UsageDay) {
+	if isWeekend(d.Day) {
+		b.weekends++
+	}
+	if analyzer.IsHoliday(d.Day) {
+		b.holidays++
+	}
+	if !isWeekend(d.Day) && !analyzer.IsHoliday(d.Day) {
+		b.weekdays++
+	}
 	for _, h := range d.DataPoints {
-		cumulativeCost += h.UsageKwh() * calculateTouDARateForHour(h)
+		period := calculateTouDARateForHour(h.StartTime)
+		b.usageKwhByPeriod[period] += h.UsageKwh()
+		b.hoursByPeriod[period] += 1
+		if h.UsageKwh() > 0 {
+			b.energyImported += h.UsageKwh()
+		} else {
+			b.energyExported += h.UsageKwh()
+		}
 	}
-	return cumulativeCost
 }
 
-func calculateTouDARateForHour(hour analyzer.UsageHour) float64 {
-	t := hour.StartTime
+func calculateTouDARateForHour(t time.Time) CostPeriod {
 	if isOnPeak(t) {
 		if isSummerMonth(t.Month()) {
-			return SUMMER_ON_PER_KWH
+			return SummerOnPeak
 		} else {
-			return WINTER_ON_PER_KWH
+			return WinterOnPeak
 		}
 	} else if isOffPeak(t) {
 		if isSummerMonth(t.Month()) {
-			return SUMMER_OFF_PER_KWH
+			return SummerOffPeak
 		} else {
-			return WINTER_OFF_PER_KWH
+			return WinterOffPeak
 		}
 	} else if isSuperOffPeak(t) {
 		if isSummerMonth(t.Month()) {
-			return SUMMER_SUPER_OFF_PER_KWH
+			return SummerSuperOffPeak
 		} else {
-			return WINTER_SUPER_OFF_PER_KWH
+			return WinterSuperOffPeak
 		}
 	} else {
 		panic("Unexpected")
@@ -85,7 +191,7 @@ func calculateTouDARateForHour(hour analyzer.UsageHour) float64 {
 }
 
 func isOnPeak(t time.Time) bool {
-	if isWeekend(t) {
+	if isWeekend(t) || analyzer.IsHoliday(t) {
 		return false
 	}
 	h := t.Hour()

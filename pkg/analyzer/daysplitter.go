@@ -12,9 +12,7 @@ func (d *UsageDay) EndTime() time.Time {
 	return d.DataPoints[len(d.DataPoints)-1].EndTime()
 }
 
-type SortedUsageDays []UsageDay
-
-func SplitByDay(in SortedUsageHours) (SortedUsageDays, error) {
+func SplitByDay(in []UsageHour) ([]UsageDay, error) {
 	yearMonthDayMap := make(map[time.Time]*UsageDay)
 	sortedKeys := make([]time.Time, 0)
 

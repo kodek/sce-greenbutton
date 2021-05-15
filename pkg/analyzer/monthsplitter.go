@@ -12,7 +12,7 @@ func (m *UsageMonth) AverageDailyUsageKwh() float64 {
 	return m.UsageKwh / float64(len(m.UsageDays))
 }
 
-func SplitByMonth(in SortedUsageDays) ([]UsageMonth, error) {
+func SplitByMonth(in []UsageDay) ([]UsageMonth, error) {
 	yearMonthMap := make(map[time.Time]*UsageMonth)
 	sortedKeys := make([]time.Time, 0)
 

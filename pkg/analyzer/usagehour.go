@@ -25,9 +25,7 @@ func (h *UsageHour) EndTime() time.Time {
 	return h.DataPoints[len(h.DataPoints)-1].EndTime
 }
 
-type SortedUsageHours []UsageHour
-
-func AggregateIntoHourWindows(parsedFile csvparser.CsvFile) (SortedUsageHours, error) {
+func AggregateIntoHourWindows(parsedFile csvparser.CsvFile) ([]UsageHour, error) {
 	valuesByHour := make(map[time.Time][]csvparser.CsvRow)
 
 	for _, v := range parsedFile {
