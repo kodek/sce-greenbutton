@@ -8,7 +8,7 @@ const SIMI_WINTER_DAILY_ALLOCATION = 12.3
 
 const MedicalBaselineAllocation = 16.5
 
-// Returns the daily allocation based on the following data:
+// GetDailyAllocation returns the daily allocation based on the following data:
 func GetDailyAllocation(t time.Time) float64 {
 	if isSummerMonth(t.Month()) {
 		return SIMI_SUMMER_DAILY_ALLOCATION + MedicalBaselineAllocation

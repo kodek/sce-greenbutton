@@ -51,11 +51,15 @@ func main() {
 	}
 
 	domesticCost := costcalculator.CalculateDomesticCost(days)
+
 	touBill := costcalculator.CalculateTouDACostForDays(days)
-	touDANemCost := touBill.NetMeteredCost()
+	touNemCost := touBill.NetMeteredCost()
+	basicCharge := touBill.TotalBasicCharge()
+	touTax := touBill.Taxes()
 	nbc := touBill.NonBypassableCharges()
 	baselineDiscount := touBill.BaselineCredit()
-	touDATotal := touDANemCost + nbc + baselineDiscount
+	touMonthlyCosts := nbc + basicCharge + touTax
+	touTrueUpDiff := touNemCost + baselineDiscount
 
 	_, _ = fmt.Fprintf(w, "Start\t%s\t\n", days[0].Day.Format("2006-01-02"))
 	_, _ = fmt.Fprintf(w, "End (excl.)\t%s\t\n", days[len(days)-1].EndTime().Format("2006-01-02"))
@@ -75,8 +79,10 @@ func main() {
 	_, _ = fmt.Fprintf(w, "Non-bypassable charges\t%.2f\t$\t\n", nbc)
 	_, _ = fmt.Fprintf(w, "Max baseline allocation\t%.2f\tKWh\t\n", touBill.MaxBaselineAllowance())
 	_, _ = fmt.Fprintf(w, "Baseline discount\t%.2f\t$\t\n", baselineDiscount)
-	_, _ = fmt.Fprintf(w, "TOU-D-A (NEM).\t%.2f\t$\t\n", touDANemCost)
-	_, _ = fmt.Fprintf(w, "TOU-D-A (Total).\t%.2f\t$\t\n", touDATotal)
+	_, _ = fmt.Fprintf(w, "Basic charge\t%.2f\t$\t\n", basicCharge)
+	_, _ = fmt.Fprintf(w, "Taxes\t%.2f\t$\t\n", touTax)
+	_, _ = fmt.Fprintf(w, "TOU-D-A (monthly costs)\t%.2f\t$\t\n", touMonthlyCosts)
+	_, _ = fmt.Fprintf(w, "TOU-D-A (NEM true-up)\t%.2f\t$\t\n", touTrueUpDiff)
 	_, _ = fmt.Fprintln(w)
 	_ = w.Flush()
 }

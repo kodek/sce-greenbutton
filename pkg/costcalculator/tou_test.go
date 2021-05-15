@@ -202,7 +202,7 @@ func TestTouDA_SummerWeekday(t *testing.T) {
 	for i, period := range expectedHours {
 		t.Run(fmt.Sprintf("Hour %d with expected period %f", i, period), func(t *testing.T) {
 			date := summerWeekday.Add(time.Duration(i) * time.Hour)
-			assert.Equal(t, period, calculateTouDARateForHour(date))
+			assert.Equal(t, period, calculateTouRateForHour(date, NewTouDAPlan()))
 		})
 	}
 }
@@ -239,7 +239,7 @@ func TestTouDA_SummerWeekend(t *testing.T) {
 	for i, period := range expectedHours {
 		t.Run(fmt.Sprintf("Hour %d with expected period %f", i, period), func(t *testing.T) {
 			date := summerWeekend.Add(time.Duration(i) * time.Hour)
-			assert.Equal(t, period, calculateTouDARateForHour(date))
+			assert.Equal(t, period, calculateTouRateForHour(date, NewTouDAPlan()))
 		})
 	}
 }
@@ -277,7 +277,7 @@ func TestTouDA_WinterWeekday(t *testing.T) {
 	for i, period := range expectedHours {
 		t.Run(fmt.Sprintf("Hour %d with expected period %f", i, period), func(t *testing.T) {
 			date := winterWeekday.Add(time.Duration(i) * time.Hour)
-			assert.Equal(t, period, calculateTouDARateForHour(date))
+			assert.Equal(t, period, calculateTouRateForHour(date, NewTouDAPlan()))
 		})
 	}
 }
@@ -314,7 +314,7 @@ func TestTouDA_WinterWeekend(t *testing.T) {
 	for i, period := range expectedHours {
 		t.Run(fmt.Sprintf("Hour %d with expected period %f", i, period), func(t *testing.T) {
 			date := winterWeekend.Add(time.Duration(i) * time.Hour)
-			assert.Equal(t, period, calculateTouDARateForHour(date))
+			assert.Equal(t, period, calculateTouRateForHour(date, NewTouDAPlan()))
 		})
 	}
 }

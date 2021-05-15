@@ -19,24 +19,6 @@ const (
 	WinterOnPeak
 )
 
-func (cost *CostPeriod) Cost() float64 {
-	switch *cost {
-	case SummerOffPeak:
-		return 0.34
-	case SummerOnPeak:
-		return 0.61
-	case SummerSuperOffPeak:
-		return 0.16
-	case WinterOffPeak:
-		return 0.30
-	case WinterOnPeak:
-		return 0.40
-	case WinterSuperOffPeak:
-		return 0.16
-	}
-	panic("unexpected")
-}
-
 func (cost *CostPeriod) Name() string {
 	switch *cost {
 	case SummerOffPeak:
@@ -56,11 +38,17 @@ func (cost *CostPeriod) Name() string {
 }
 
 const BaselineCreditPerKwh = -0.07848
-const NonBypassableChargePerKwh = 0.01362
+const Nem2NonBypassableChargePerKwh = 0.01362
+const StateTaxPerKwh = 0.00030
 
 func CalculateTouDACostForDays(days []analyzer.UsageDay) TouBillSummary {
+	return calculateWithPlan(days, NewTouDAPlan())
+}
+
+func calculateWithPlan(days []analyzer.UsageDay, plan TouPlan) TouBillSummary {
 
 	bucket := TouBillSummary{
+		touPlan:          plan,
 		days:             days,
 		usageKwhByPeriod: make(map[CostPeriod]float64),
 		hoursByPeriod:    make(map[CostPeriod]int),
@@ -78,7 +66,18 @@ func CalculateTouDACostForDays(days []analyzer.UsageDay) TouBillSummary {
 	return bucket
 }
 
+type TouPlan interface {
+	Cost(period CostPeriod) float64
+	IsOnPeak(t time.Time) bool
+	IsOffPeak(t time.Time) bool
+	IsSuperOffPeak(t time.Time) bool
+	DailyBasicCharge() float64
+	MinimumDailyCharge() float64
+	HasBaselineAllocation() bool
+}
+
 type TouBillSummary struct {
+	touPlan          TouPlan
 	days             []analyzer.UsageDay
 	usageKwhByPeriod map[CostPeriod]float64
 	hoursByPeriod    map[CostPeriod]int
@@ -93,7 +92,7 @@ type TouBillSummary struct {
 func (b *TouBillSummary) NetMeteredCost() float64 {
 	total := 0.0
 	for period, usage := range b.usageKwhByPeriod {
-		total += usage * period.Cost()
+		total += usage * b.touPlan.Cost(period)
 	}
 	return total
 }
@@ -104,6 +103,16 @@ func (b *TouBillSummary) NetEnergyUsage() float64 {
 		total += usage
 	}
 	return total
+}
+
+func (b *TouBillSummary) Taxes() float64 {
+	usage := b.NetEnergyUsage()
+	if usage > 0 {
+		return usage * StateTaxPerKwh
+	} else {
+		return 0
+	}
+
 }
 
 func (b *TouBillSummary) UsageByPeriod() map[CostPeriod]float64 {
@@ -119,15 +128,22 @@ func (b *TouBillSummary) EnergyImported() float64 {
 }
 
 func (b *TouBillSummary) NonBypassableCharges() float64 {
-	return b.energyImported * NonBypassableChargePerKwh
+	return b.energyImported * Nem2NonBypassableChargePerKwh
 }
 
 func (b *TouBillSummary) MaxBaselineAllowance() float64 {
+	if !b.touPlan.HasBaselineAllocation() {
+		return 0
+	}
 	total := 0.0
 	for _, p := range b.days {
 		total += GetDailyAllocation(p.Day)
 	}
 	return total
+}
+
+func (b *TouBillSummary) TotalBasicCharge() float64 {
+	return float64(len(b.days)) * b.touPlan.DailyBasicCharge()
 }
 
 func (b *TouBillSummary) BaselineCredit() float64 {
@@ -141,7 +157,7 @@ func (b *TouBillSummary) BaselineCredit() float64 {
 }
 
 func (b *TouBillSummary) AverageDailyUsage() float64 {
-	return float64(b.NetEnergyUsage()) / float64(len(b.days))
+	return b.NetEnergyUsage() / float64(len(b.days))
 }
 
 func (b *TouBillSummary) add(d analyzer.UsageDay) {
@@ -155,7 +171,7 @@ func (b *TouBillSummary) add(d analyzer.UsageDay) {
 		b.weekdays++
 	}
 	for _, h := range d.DataPoints {
-		period := calculateTouDARateForHour(h.StartTime)
+		period := calculateTouRateForHour(h.StartTime, b.touPlan)
 		b.usageKwhByPeriod[period] += h.UsageKwh()
 		b.hoursByPeriod[period] += 1
 		if h.UsageKwh() > 0 {
@@ -166,20 +182,20 @@ func (b *TouBillSummary) add(d analyzer.UsageDay) {
 	}
 }
 
-func calculateTouDARateForHour(t time.Time) CostPeriod {
-	if isOnPeak(t) {
+func calculateTouRateForHour(t time.Time, plan TouPlan) CostPeriod {
+	if plan.IsOnPeak(t) {
 		if isSummerMonth(t.Month()) {
 			return SummerOnPeak
 		} else {
 			return WinterOnPeak
 		}
-	} else if isOffPeak(t) {
+	} else if plan.IsOffPeak(t) {
 		if isSummerMonth(t.Month()) {
 			return SummerOffPeak
 		} else {
 			return WinterOffPeak
 		}
-	} else if isSuperOffPeak(t) {
+	} else if plan.IsSuperOffPeak(t) {
 		if isSummerMonth(t.Month()) {
 			return SummerSuperOffPeak
 		} else {
@@ -190,24 +206,7 @@ func calculateTouDARateForHour(t time.Time) CostPeriod {
 	}
 }
 
-func isOnPeak(t time.Time) bool {
-	if isWeekend(t) || analyzer.IsHoliday(t) {
-		return false
-	}
-	h := t.Hour()
-	return h >= 14 && h < 20
-}
-
 func isWeekend(t time.Time) bool {
 	weekDay := t.Weekday()
 	return weekDay == time.Saturday || weekDay == time.Sunday
-}
-
-func isOffPeak(t time.Time) bool {
-	h := t.Hour()
-	return h >= 8 && h < 22 && !isOnPeak(t)
-}
-
-func isSuperOffPeak(t time.Time) bool {
-	return !isOnPeak(t) && !isOffPeak(t)
 }
