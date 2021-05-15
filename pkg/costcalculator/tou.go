@@ -12,10 +12,12 @@ type CostPeriod float64
 const (
 	SummerSuperOffPeak CostPeriod = iota
 	SummerOffPeak
+	SummerMidPeak
 	SummerOnPeak
 
 	WinterSuperOffPeak
 	WinterOffPeak
+	WinterMidPeak
 	WinterOnPeak
 )
 
@@ -23,12 +25,16 @@ func (cost *CostPeriod) Name() string {
 	switch *cost {
 	case SummerOffPeak:
 		return "Off-Peak (Summer)"
+	case SummerMidPeak:
+		return "Mid-Peak (Summer)"
 	case SummerOnPeak:
 		return "On-Peak (Summer)"
 	case SummerSuperOffPeak:
 		return "Super Off-Peak (Summer)"
 	case WinterOffPeak:
 		return "Off-Peak (Winter)"
+	case WinterMidPeak:
+		return "Mid-Peak (Winter)"
 	case WinterOnPeak:
 		return "On-Peak (Winter)"
 	case WinterSuperOffPeak:
@@ -42,10 +48,10 @@ const Nem2NonBypassableChargePerKwh = 0.01362
 const StateTaxPerKwh = 0.00030
 
 func CalculateTouDACostForDays(days []analyzer.UsageDay) TouBillSummary {
-	return calculateWithPlan(days, NewTouDAPlan())
+	return CalculateWithTouPlan(days, NewTouDAPlan())
 }
 
-func calculateWithPlan(days []analyzer.UsageDay, plan TouPlan) TouBillSummary {
+func CalculateWithTouPlan(days []analyzer.UsageDay, plan TouPlan) TouBillSummary {
 
 	bucket := TouBillSummary{
 		touPlan:          plan,
@@ -67,8 +73,10 @@ func calculateWithPlan(days []analyzer.UsageDay, plan TouPlan) TouBillSummary {
 }
 
 type TouPlan interface {
+	Name() string
 	Cost(period CostPeriod) float64
 	IsOnPeak(t time.Time) bool
+	IsMidPeak(t time.Time) bool
 	IsOffPeak(t time.Time) bool
 	IsSuperOffPeak(t time.Time) bool
 	DailyBasicCharge() float64
@@ -189,6 +197,12 @@ func calculateTouRateForHour(t time.Time, plan TouPlan) CostPeriod {
 		} else {
 			return WinterOnPeak
 		}
+	} else if plan.IsMidPeak(t) {
+		if isSummerMonth(t.Month()) {
+			return SummerMidPeak
+		} else {
+			return WinterMidPeak
+		}
 	} else if plan.IsOffPeak(t) {
 		if isSummerMonth(t.Month()) {
 			return SummerOffPeak
@@ -209,4 +223,8 @@ func calculateTouRateForHour(t time.Time, plan TouPlan) CostPeriod {
 func isWeekend(t time.Time) bool {
 	weekDay := t.Weekday()
 	return weekDay == time.Saturday || weekDay == time.Sunday
+}
+
+func isWeekday(t time.Time) bool {
+	return !isWeekend(t) && !analyzer.IsHoliday(t)
 }

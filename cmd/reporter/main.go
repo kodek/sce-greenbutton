@@ -50,39 +50,46 @@ func main() {
 		panic(err)
 	}
 
-	domesticCost := costcalculator.CalculateDomesticCost(days)
-
-	touBill := costcalculator.CalculateTouDACostForDays(days)
-	touNemCost := touBill.NetMeteredCost()
-	basicCharge := touBill.TotalBasicCharge()
-	touTax := touBill.Taxes()
-	nbc := touBill.NonBypassableCharges()
-	baselineDiscount := touBill.BaselineCredit()
-	touMonthlyCosts := nbc + basicCharge + touTax
-	touTrueUpDiff := touNemCost + baselineDiscount
-
 	_, _ = fmt.Fprintf(w, "Start\t%s\t\n", days[0].Day.Format("2006-01-02"))
 	_, _ = fmt.Fprintf(w, "End (excl.)\t%s\t\n", days[len(days)-1].EndTime().Format("2006-01-02"))
 	_, _ = fmt.Fprintf(w, "Time\t%d\tDays\t\n", len(days))
-	_, _ = fmt.Fprintf(w, "Energy exported\t%.2f\tKWh\t\n", -1*touBill.EnergyExported())
-	_, _ = fmt.Fprintf(w, "Energy imported\t%.2f\tKWh\t\n", touBill.EnergyImported())
-	_, _ = fmt.Fprintf(w, "Net usage\t%.2f\tKWh\t\n", touBill.NetEnergyUsage())
-	_, _ = fmt.Fprintf(w, "Average daily usage\t%.2f\tKWh\t\n", touBill.AverageDailyUsage())
-	_, _ = fmt.Fprintf(w, "-------\t-------\t\n")
-	_, _ = fmt.Fprintf(w, "Domestic est.\t%.2f\t$\t\n", domesticCost)
-	_, _ = fmt.Fprintf(w, "-------\t-------\t\n")
-
-	for period, usage := range touBill.UsageByPeriod() {
-		_, _ = fmt.Fprintf(w, "%s\t%.2f\tKWh\t\n", period.Name(), usage)
-	}
-	_, _ = fmt.Fprintf(w, "-------\t-------\t\n")
-	_, _ = fmt.Fprintf(w, "Non-bypassable charges\t%.2f\t$\t\n", nbc)
-	_, _ = fmt.Fprintf(w, "Max baseline allocation\t%.2f\tKWh\t\n", touBill.MaxBaselineAllowance())
-	_, _ = fmt.Fprintf(w, "Baseline discount\t%.2f\t$\t\n", baselineDiscount)
-	_, _ = fmt.Fprintf(w, "Basic charge\t%.2f\t$\t\n", basicCharge)
-	_, _ = fmt.Fprintf(w, "Taxes\t%.2f\t$\t\n", touTax)
-	_, _ = fmt.Fprintf(w, "TOU-D-A (monthly costs)\t%.2f\t$\t\n", touMonthlyCosts)
-	_, _ = fmt.Fprintf(w, "TOU-D-A (NEM true-up)\t%.2f\t$\t\n", touTrueUpDiff)
 	_, _ = fmt.Fprintln(w)
+
+	domesticCost := costcalculator.CalculateDomesticCost(days)
+	_, _ = fmt.Fprintf(w, "Domestic est.\t%.2f\t$\t\n", domesticCost)
+	_, _ = fmt.Fprintln(w)
+
+	for _, plan := range []costcalculator.TouPlan{costcalculator.NewTouDAPlan(), costcalculator.NewTouDPrime(), costcalculator.NewTouD58()} {
+
+		touBill := costcalculator.CalculateWithTouPlan(days, plan)
+
+		_, _ = fmt.Fprintf(w, "Name\t%s\t\t\n", plan.Name())
+		_, _ = fmt.Fprintf(w, "Energy exported\t%.2f\tKWh\t\n", -1*touBill.EnergyExported())
+		_, _ = fmt.Fprintf(w, "Energy imported\t%.2f\tKWh\t\n", touBill.EnergyImported())
+		_, _ = fmt.Fprintf(w, "Net usage\t%.2f\tKWh\t\n", touBill.NetEnergyUsage())
+		_, _ = fmt.Fprintf(w, "Average daily usage\t%.2f\tKWh\t\n", touBill.AverageDailyUsage())
+
+		_, _ = fmt.Fprintf(w, "-------\t-------\t\n")
+		for period, usage := range touBill.UsageByPeriod() {
+			_, _ = fmt.Fprintf(w, "%s\t%.2f\tKWh\t\n", period.Name(), usage)
+		}
+		_, _ = fmt.Fprintf(w, "-------\t-------\t\n")
+
+		touNemCost := touBill.NetMeteredCost()
+		basicCharge := touBill.TotalBasicCharge()
+		touTax := touBill.Taxes()
+		nbc := touBill.NonBypassableCharges()
+		baselineDiscount := touBill.BaselineCredit()
+		touMonthlyCosts := nbc + basicCharge + touTax
+		touTrueUpDiff := touNemCost + baselineDiscount
+		_, _ = fmt.Fprintf(w, "Non-bypassable charges\t%.2f\t$\t\n", nbc)
+		_, _ = fmt.Fprintf(w, "Max baseline allocation\t%.2f\tKWh\t\n", touBill.MaxBaselineAllowance())
+		_, _ = fmt.Fprintf(w, "Baseline discount\t%.2f\t$\t\n", baselineDiscount)
+		_, _ = fmt.Fprintf(w, "Basic charge\t%.2f\t$\t\n", basicCharge)
+		_, _ = fmt.Fprintf(w, "Taxes\t%.2f\t$\t\n", touTax)
+		_, _ = fmt.Fprintf(w, "Fees from monthly bills\t%.2f\t$\t\n", touMonthlyCosts)
+		_, _ = fmt.Fprintf(w, "NEM true-up\t%.2f\t$\t\n", touTrueUpDiff)
+		_, _ = fmt.Fprintln(w)
+	}
 	_ = w.Flush()
 }

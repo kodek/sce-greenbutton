@@ -2,8 +2,6 @@ package costcalculator
 
 import (
 	"time"
-
-	"github.com/kodek/sce-greenbutton/pkg/analyzer"
 )
 
 type TouDAPlan struct{}
@@ -11,6 +9,8 @@ type TouDAPlan struct{}
 func NewTouDAPlan() TouPlan {
 	return &TouDAPlan{}
 }
+
+func (p *TouDAPlan) Name() string { return "TOU-D-A" }
 
 func (p *TouDAPlan) Cost(period CostPeriod) float64 {
 	switch period {
@@ -31,13 +31,16 @@ func (p *TouDAPlan) Cost(period CostPeriod) float64 {
 }
 
 func (p *TouDAPlan) IsOnPeak(t time.Time) bool {
-	if isWeekend(t) || analyzer.IsHoliday(t) {
+	if !isWeekday(t) {
 		return false
 	}
 	h := t.Hour()
 	return h >= 14 && h < 20
 }
 
+func (p *TouDAPlan) IsMidPeak(_ time.Time) bool {
+	return false
+}
 func (p *TouDAPlan) IsOffPeak(t time.Time) bool {
 	h := t.Hour()
 	return h >= 8 && h < 22 && !p.IsOnPeak(t)
