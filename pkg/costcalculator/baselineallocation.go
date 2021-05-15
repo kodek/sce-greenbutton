@@ -2,15 +2,18 @@ package costcalculator
 
 import "time"
 
-const SIMI_SUMMER_DAILY_ALLOCATION = 13.8
-const SIMI_WINTER_DAILY_ALLOCATION = 10.6
+// From https://www.sce.com/residential/rates/Standard-Residential-Rate-Plan
+const SIMI_SUMMER_DAILY_ALLOCATION = 16.5
+const SIMI_WINTER_DAILY_ALLOCATION = 12.3
+
+const MedicalBaselineAllocation = 16.5
 
 // Returns the daily allocation based on the following data:
-func getDailyAllocation(t time.Time) float64 {
+func GetDailyAllocation(t time.Time) float64 {
 	if isSummerMonth(t.Month()) {
-		return SIMI_SUMMER_DAILY_ALLOCATION
+		return SIMI_SUMMER_DAILY_ALLOCATION + MedicalBaselineAllocation
 	} else {
-		return SIMI_WINTER_DAILY_ALLOCATION
+		return SIMI_WINTER_DAILY_ALLOCATION + MedicalBaselineAllocation
 	}
 }
 

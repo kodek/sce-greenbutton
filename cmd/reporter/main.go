@@ -4,9 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"text/tabwriter"
-	"time"
 
 	"github.com/kodek/sce-greenbutton/pkg/costcalculator"
 
@@ -38,60 +35,17 @@ func main() {
 	fmt.Printf("First date: %+v\n", hours[0])
 	fmt.Printf("Last date: %+v\n", hours[len(hours)-1])
 
-	addCarSimulation(csv)
-
-	annualUsage := 0.0
+	totalUsage := 0.0
 	for _, hr := range csv {
-		annualUsage += hr.UsageKwh
+		totalUsage += hr.UsageKwh
 	}
-	fmt.Printf("Total annual usage: %.2f kWh.\n\n", annualUsage)
+	fmt.Printf("Total usage: %.2f kWh.\n\n", totalUsage)
 
-	// Split into months
 	days, err := analyzer.SplitByDay(hours)
 	if err != nil {
 		panic(err)
 	}
 
-	months, err := analyzer.SplitByMonth(days)
-	if err != nil {
-		panic(err)
-	}
-
-	totalDomesticCost := 0.0
-	totalTouDACost := 0.0
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	_, _ = fmt.Fprintln(w, "Month\tDays\tUsage\tAveDailyUsage\tDOMESTIC\tTOU-D-A\t")
-	for _, month := range months {
-		domesticCost := costcalculator.CalculateDomesticCost(month)
-		totalDomesticCost += domesticCost
-
-		touDACost := costcalculator.CalculateTouDACostForMonth(month)
-		totalTouDACost += touDACost
-
-		_, _ = fmt.Fprintf(w,
-			"%d-%d\t%d\t%.2f\t%.2f\t$%.2f\t$%.2f\t\n",
-			month.Month.Year(),
-			month.Month.Month(),
-			len(month.UsageDays),
-			month.UsageKwh,
-			month.AverageDailyUsageKwh(),
-			domesticCost,
-			touDACost)
-	}
-	_ = w.Flush()
-	fmt.Printf("Total DOMESTIC: $%.2f.\n", totalDomesticCost)
-	fmt.Printf("Total TOU-D-A: $%.2f.\n", totalTouDACost)
-
-	analyzer.CalculateAverageUsageByHour(months, w)
-	_ = w.Flush()
-}
-func addCarSimulation(f csvparser.CsvFile) {
-	for i, hr := range f {
-		if hr.StartTime.Before(time.Date(2018, 07, 10, 0, 0, 0, 0, time.UTC)) {
-			h := hr.StartTime.Hour()
-			if !(h >= 1 && h < 22) {
-				f[i].UsageKwh += 8
-			}
-		}
-	}
+	_ = costcalculator.CalculateDomesticCost(days)
+	_ = costcalculator.CalculateTouDACostForMonth(days)
 }

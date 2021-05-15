@@ -34,15 +34,15 @@ const BASELINE_CREDIT_PER_KWH = 0.08
 //	return cumulativeCost
 //}
 
-func CalculateTouDACostForMonth(m analyzer.UsageMonth) float64 {
+func CalculateTouDACostForMonth(days []analyzer.UsageDay) float64 {
 	cumulativeCost := 0.0
 	cumulativeKwh := 0.0
-	for _, d := range m.UsageDays {
+	for _, d := range days {
 		cumulativeCost += touDACostForDay(d)
 		cumulativeKwh += d.UsageKwh
 	}
 
-	baselineAllocation := baselineAllocationForMonth(m.Month)
+	baselineAllocation := baselineAllocationForDays(days)
 	if cumulativeKwh > baselineAllocation {
 		cumulativeCost -= baselineAllocation * BASELINE_CREDIT_PER_KWH
 	} else {
