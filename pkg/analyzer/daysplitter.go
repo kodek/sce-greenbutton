@@ -27,7 +27,7 @@ func SplitByDay(in SortedUsageHours) (SortedUsageDays, error) {
 		}
 		// Append the data to the day
 		usageDay.DataPoints = append(usageDay.DataPoints, hr)
-		usageDay.UsageKwh += hr.UsageKwh
+		usageDay.UsageKwh += hr.UsageKwh()
 	}
 
 	values := make([]UsageDay, 0)

@@ -75,6 +75,16 @@ Energy consumption time period,Usage(Real energy in kilowatt-hours),Reading qual
 "2017-09-01 23:00:00 to 2017-09-02 00:00:00","0.510",""
 */
 
+// NewRowWith15MinuteDuration is a helper factory function used for testing purposes.
+func NewRowWith15MinuteDuration(start time.Time, usageKwh float64) CsvRow {
+	return CsvRow{
+		StartTime:      start,
+		EndTime:        start.Add(15 * time.Minute),
+		UsageKwh:       usageKwh,
+		ReadingQuality: "",
+	}
+}
+
 type CsvRow struct {
 	StartTime      time.Time
 	EndTime        time.Time

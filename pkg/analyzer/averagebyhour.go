@@ -11,7 +11,7 @@ func CalculateAverageUsageByHour(in []UsageMonth, w io.Writer) {
 	for _, m := range in {
 		for _, d := range m.UsageDays {
 			for _, h := range d.DataPoints {
-				usageByHour[h.StartTime.Hour()] += h.UsageKwh
+				usageByHour[h.StartTime.Hour()] += h.UsageKwh()
 				countByHour[h.StartTime.Hour()]++
 			}
 		}

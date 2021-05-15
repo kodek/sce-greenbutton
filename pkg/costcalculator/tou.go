@@ -54,7 +54,7 @@ func CalculateTouDACostForMonth(m analyzer.UsageMonth) float64 {
 func touDACostForDay(d analyzer.UsageDay) float64 {
 	cumulativeCost := 0.0
 	for _, h := range d.DataPoints {
-		cumulativeCost += h.UsageKwh * calculateTouDARateForHour(h)
+		cumulativeCost += h.UsageKwh() * calculateTouDARateForHour(h)
 	}
 	return cumulativeCost
 }

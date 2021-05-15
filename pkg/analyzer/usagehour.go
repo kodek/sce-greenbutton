@@ -9,14 +9,26 @@ import (
 )
 
 type UsageHour struct {
-	StartTime time.Time
-	UsageKwh  float64
+	StartTime  time.Time
+	DataPoints []csvparser.CsvRow
+}
+
+func (h *UsageHour) UsageKwh() float64 {
+	total := 0.0
+	for _, p := range h.DataPoints {
+		total += p.UsageKwh
+	}
+	return total
+}
+
+func (h *UsageHour) EndTime() time.Time {
+	return h.DataPoints[len(h.DataPoints)-1].EndTime
 }
 
 type SortedUsageHours []UsageHour
 
 func AggregateIntoHourWindows(parsedFile csvparser.CsvFile) (SortedUsageHours, error) {
-	usageByHour := make(map[time.Time]float64)
+	valuesByHour := make(map[time.Time][]csvparser.CsvRow)
 
 	for _, v := range parsedFile {
 		hr := truncateToHour(v.StartTime)
@@ -24,14 +36,14 @@ func AggregateIntoHourWindows(parsedFile csvparser.CsvFile) (SortedUsageHours, e
 		if hr != hrEnd {
 			return nil, fmt.Errorf("start and end of data point should be within the same hour for %+v", v)
 		}
-		usageByHour[hr] += v.UsageKwh
+		valuesByHour[hr] = append(valuesByHour[hr], v)
 	}
 
 	out := make([]UsageHour, 0)
-	for k, v := range usageByHour {
+	for k, v := range valuesByHour {
 		out = append(out, UsageHour{
-			StartTime: k,
-			UsageKwh:  v,
+			StartTime:  k,
+			DataPoints: v,
 		})
 	}
 	sort.Slice(out, func(i, j int) bool {
