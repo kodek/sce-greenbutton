@@ -2,6 +2,7 @@ package costcalculator
 
 import (
 	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -32,7 +33,7 @@ func TestTouBillSummary_NetMeteredCost_CreditsCancelOut(t *testing.T) {
 
 	got := CalculateTouDACostForDays(days)
 
-	assert.Equal(t, 0.0, got.NetMeteredCost())
+	assert.Equal(t, 0.0, got.NetMeteredCostNoBaseline())
 }
 
 func TestTouBillSummary_AverageDailyUsage_AveragesAcrossDays(t *testing.T) {
@@ -146,8 +147,26 @@ func TestTouBillSummary_BaselineCredit_DiscountHasCeilingBasedOnUsage(t *testing
 	})
 	largerBill := CalculateTouDACostForDays(days2)
 
-	assert.Greater(t, largerBill.NetMeteredCost(), largeBill.NetMeteredCost())
+	assert.Greater(t, largerBill.NetMeteredCostNoBaseline(), largeBill.NetMeteredCostNoBaseline())
 	assert.Equal(t, largeBill.BaselineCredit(), largerBill.BaselineCredit())
+}
+
+func TestTouBillSummary_NegativeTrueUp_MuchCheaperDueToSurplusRate(t *testing.T) {
+	surplusDays := toDaysOrDie(t, []csvparser.CsvRow{
+		csvparser.NewRowWith15MinuteDuration(now, -1000.0),
+	})
+	surplusBill := CalculateTouDACostForDays(surplusDays)
+
+	deficitDays := toDaysOrDie(t, []csvparser.CsvRow{
+		csvparser.NewRowWith15MinuteDuration(now, 1000.0),
+	})
+	deficitBill := CalculateTouDACostForDays(deficitDays)
+
+	assert.Negative(t, surplusBill.TrueUp())
+	assert.Positive(t, deficitBill.TrueUp())
+	assert.Equal(t, math.Abs(deficitBill.NetMeteredCostNoBaseline()), math.Abs(surplusBill.NetMeteredCostNoBaseline()))
+	assert.Equal(t, math.Abs(deficitBill.BaselineCredit()), math.Abs(surplusBill.BaselineCredit()))
+	assert.Greater(t, math.Abs(deficitBill.TrueUp()), math.Abs(surplusBill.TrueUp()))
 }
 
 func oneDataPointPerHourWithConstantUsage(day time.Time, usage float64) []csvparser.CsvRow {

@@ -24,21 +24,21 @@ const (
 func (cost *CostPeriod) Name() string {
 	switch *cost {
 	case SummerOffPeak:
-		return "Off-Peak (Summer)"
+		return "Summer - Off-Peak"
 	case SummerMidPeak:
-		return "Mid-Peak (Summer)"
+		return "Summer - Mid-Peak"
 	case SummerOnPeak:
-		return "On-Peak (Summer)"
+		return "Summer - On-Peak"
 	case SummerSuperOffPeak:
-		return "Super Off-Peak (Summer)"
+		return "Summer - Super Off-Peak"
 	case WinterOffPeak:
-		return "Off-Peak (Winter)"
+		return "Winter - Off-Peak"
 	case WinterMidPeak:
-		return "Mid-Peak (Winter)"
+		return "Winter - Mid-Peak"
 	case WinterOnPeak:
-		return "On-Peak (Winter)"
+		return "Winter - On-Peak"
 	case WinterSuperOffPeak:
-		return "Super Off-Peak (Winter)"
+		return "Winter - Super Off-Peak"
 	}
 	panic("unexpected")
 }
@@ -46,6 +46,7 @@ func (cost *CostPeriod) Name() string {
 const BaselineCreditPerKwh = -0.07848
 const Nem2NonBypassableChargePerKwh = 0.01362
 const StateTaxPerKwh = 0.00030
+const NemSurplusRatePerKwh = 0.02777
 
 func CalculateTouDACostForDays(days []analyzer.UsageDay) TouBillSummary {
 	return CalculateWithTouPlan(days, NewTouDAPlan())
@@ -97,7 +98,7 @@ type TouBillSummary struct {
 	holidays int
 }
 
-func (b *TouBillSummary) NetMeteredCost() float64 {
+func (b *TouBillSummary) NetMeteredCostNoBaseline() float64 {
 	total := 0.0
 	for period, usage := range b.usageKwhByPeriod {
 		total += usage * b.touPlan.Cost(period)
@@ -111,6 +112,14 @@ func (b *TouBillSummary) NetEnergyUsage() float64 {
 		total += usage
 	}
 	return total
+}
+
+func (b *TouBillSummary) TrueUp() float64 {
+	if b.NetEnergyUsage() > 0 {
+		return math.Max(b.NetMeteredCostNoBaseline()+b.BaselineCredit(), 0)
+	} else {
+		return b.NetEnergyUsage() * NemSurplusRatePerKwh
+	}
 }
 
 func (b *TouBillSummary) Taxes() float64 {
