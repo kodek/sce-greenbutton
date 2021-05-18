@@ -82,6 +82,7 @@ func TestDurationWorksOnFallDaylightSavings(t *testing.T) {
 	assert.Len(t, got, 1)
 	assert.Equal(t, 15*time.Minute, got[0].Duration())
 }
+
 func readOrDie(file string) string {
 	fileBytes, err := ioutil.ReadFile("testdata/" + file)
 	if err != nil {

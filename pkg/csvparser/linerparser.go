@@ -53,7 +53,7 @@ func parseHourConsumption(line string, lineNumber int) (*CsvRow, error) {
 			LineNumber: lineNumber,
 		}
 	}
-	err = checkPeriodIs15Minutes(tStart, tEnd)
+	err = checkDiff(tStart, tEnd, 15*time.Minute)
 	if err != nil {
 		return nil, &LineParsingError{
 			Cause:      err,
@@ -109,9 +109,7 @@ func parseTime(t string) (time.Time, error) {
 	return time.ParseInLocation("2006-01-02 15:04:05", t, time.UTC)
 }
 
-func checkPeriodIs15Minutes(before time.Time, after time.Time) error {
-	expectedDiff := 15 * time.Minute
-
+func checkDiff(before time.Time, after time.Time, expectedDiff time.Duration) error {
 	_, beforeOffset := before.Zone()
 	_, afterOffset := before.Add(expectedDiff).Zone()
 	hourOffset := time.Duration(afterOffset-beforeOffset) * time.Second
@@ -121,7 +119,7 @@ func checkPeriodIs15Minutes(before time.Time, after time.Time) error {
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("expected time period of 15 minutes between %s and %s, but got %s (with tz diff %s)", before, after, diff, hourOffset))
+	return errors.New(fmt.Sprintf("expected time period of %s between %s and %s, but got %s (with tz diff %s)", expectedDiff, before, after, diff, hourOffset))
 }
 
 func parseUsage(usageStr string) (float64, error) {
