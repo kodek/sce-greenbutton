@@ -36,8 +36,8 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Read %d data points (%d days).\n", len(csv), len(hours)/24)
-	fmt.Printf("First date: %+v\n", hours[0].StartTime)
-	fmt.Printf("Last date: %+v\n", hours[len(hours)-1].StartTime)
+	fmt.Printf("First date: %+v\n", hours[0].StartTime())
+	fmt.Printf("Last date: %+v\n", hours[len(hours)-1].StartTime())
 
 	totalUsage := 0.0
 	for _, hr := range csv {

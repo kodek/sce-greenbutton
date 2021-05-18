@@ -11,7 +11,6 @@ import (
 var now = time.Date(2020, 1, 1, 1, 0, 0, 0, time.Local)
 
 func TestConvertsDataPointToUsageHour(t *testing.T) {
-
 	parsed := csvparser.CsvFile{
 		csvparser.CsvRow{
 			StartTime:      now,
@@ -25,7 +24,7 @@ func TestConvertsDataPointToUsageHour(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, got, 1)
-	assert.Equal(t, now, got[0].StartTime)
+	assert.Equal(t, now, got[0].StartTime())
 	assert.Equal(t, 123.0, got[0].UsageKwh())
 }
 
@@ -39,7 +38,7 @@ func TestTwoDataPointsInOneHourAggregated(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1, len(got))
-	assert.Equal(t, now, got[0].StartTime)
+	assert.Equal(t, now, got[0].StartTime())
 	assert.Equal(t, 3.0, got[0].UsageKwh())
 }
 func TestWindowOverlapsHourFails(t *testing.T) {

@@ -14,10 +14,11 @@ func (d *UsageDay) EndTime() time.Time {
 
 func SplitByDay(in []UsageHour) ([]UsageDay, error) {
 	yearMonthDayMap := make(map[time.Time]*UsageDay)
+	// Keep track of the order in which keys were added.
 	sortedKeys := make([]time.Time, 0)
 
 	for _, hr := range in {
-		dayBucket := truncateToDay(hr.StartTime)
+		dayBucket := truncateToDay(hr.StartTime())
 		usageDay, ok := yearMonthDayMap[dayBucket]
 		if !ok {
 			sortedKeys = append(sortedKeys, dayBucket)
@@ -43,13 +44,13 @@ func SplitByDay(in []UsageHour) ([]UsageDay, error) {
 		expectedMonth := v.Day.Month()
 		expectedDay := v.Day.Day()
 		for _, p := range v.DataPoints {
-			if p.StartTime.Day() != expectedDay {
+			if p.StartTime().Day() != expectedDay {
 				panic("Wrong day within UsageDay")
 			}
-			if p.StartTime.Month() != expectedMonth {
+			if p.StartTime().Month() != expectedMonth {
 				panic("Wrong month within UsageDay")
 			}
-			if p.StartTime.Year() != expectedYear {
+			if p.StartTime().Year() != expectedYear {
 				panic("Wrong year within UsageDay")
 			}
 		}

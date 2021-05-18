@@ -179,7 +179,7 @@ func (b *TouBillSummary) add(d analyzer.UsageDay) {
 		b.weekdays++
 	}
 	for _, h := range d.DataPoints {
-		period := calculateTouRateForHour(h.StartTime, b.touPlan)
+		period := calculateTouRateForHour(h.StartTime(), b.touPlan)
 		b.usageKwhByPeriod[period] += h.UsageKwh()
 		b.hoursByPeriod[period] += 1
 		if h.UsageKwh() > 0 {
