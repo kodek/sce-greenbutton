@@ -1,40 +1,69 @@
 package costcalculator
 
 import (
+	"math"
+
 	"github.com/kodek/sce-greenbutton/pkg/analyzer"
 )
 
-const TIER1_PER_KWH = 0.23
-const TIER2_PER_KWH = 0.30
-const TIER3_PER_KWH = 0.37
+const Tier1KWhCost = 0.06181 + 0.09545
+const Tier2KWhCost = 0.10511 + 0.09545
+const Tier3KWhCost = 0.15525 + 0.09545
 
-func CalculateDomesticCost(days []analyzer.UsageDay) float64 {
-	baselineAllocation := baselineAllocationForDays(days)
+const DomesticMinDailyCharge = 0.35
+const DomesticDailyCharge = 0.031
 
-	usage := 0.0
+type DomesticBreakdown struct {
+	Days                  int
+	BaselineAllocationKwh float64
+
+	NemCost      float64
+	MinCharges   float64
+	DailyCharges float64
+
+	UsageKwh      float64
+	Tier1UsageKwh float64
+	Tier2UsageKwh float64
+	Tier3UsageKwh float64
+}
+
+func CalculateDomesticForDays(days []analyzer.UsageDay) DomesticBreakdown {
+	out := DomesticBreakdown{
+		Days:                  len(days),
+		BaselineAllocationKwh: baselineAllocationForDays(days),
+	}
+
 	for _, d := range days {
-		usage += d.UsageKwh
+		out.UsageKwh += d.UsageKwh
+	}
+	rebalanceTiers(&out)
+
+	out.NemCost = out.Tier1UsageKwh*Tier1KWhCost + out.Tier2UsageKwh*Tier2KWhCost + out.Tier3UsageKwh*Tier3KWhCost
+	out.DailyCharges = DomesticDailyCharge * float64(out.Days)
+
+	minCharge := DomesticMinDailyCharge * float64(out.Days)
+	if minCharge > out.NemCost {
+		out.MinCharges = minCharge - math.Max(0.0, out.NemCost)
 	}
 
-	cumulativeCost := 0.0
-	if usage <= baselineAllocation {
-		return TIER1_PER_KWH * usage
-	} else {
-		cumulativeCost += TIER1_PER_KWH * baselineAllocation
-		usage -= baselineAllocation
+	return out
+}
+
+func rebalanceTiers(d *DomesticBreakdown) {
+	baseline := d.BaselineAllocationKwh
+	remainingAbsUsage := d.UsageKwh
+
+	if remainingAbsUsage >= 4*baseline {
+		t3Usage := remainingAbsUsage - 4*baseline
+		remainingAbsUsage -= t3Usage
+		d.Tier3UsageKwh = math.Copysign(t3Usage, d.UsageKwh)
 	}
-	if usage <= 3*baselineAllocation {
-		cumulativeCost += TIER2_PER_KWH * usage
-		return cumulativeCost
-	} else {
-		cumulativeCost += TIER2_PER_KWH * 3 * baselineAllocation
-		usage -= 3 * baselineAllocation
+	if remainingAbsUsage >= 1*baseline {
+		t2Usage := remainingAbsUsage - baseline
+		remainingAbsUsage -= t2Usage
+		d.Tier2UsageKwh = math.Copysign(t2Usage, d.UsageKwh)
 	}
-	if usage < 0 {
-		panic("Usage should be positive if we're in tier 3")
-	}
-	cumulativeCost += TIER3_PER_KWH * usage
-	return cumulativeCost
+	d.Tier1UsageKwh = math.Copysign(remainingAbsUsage, d.UsageKwh)
 }
 
 func baselineAllocationForDays(days []analyzer.UsageDay) float64 {
