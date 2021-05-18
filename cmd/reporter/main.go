@@ -75,7 +75,7 @@ func main() {
 		}
 		_, _ = fmt.Fprintf(w, "-------\t-------\t\n")
 
-		touNemCost := touBill.NetMeteredCost()
+		touNemCost := touBill.NetMeteredCostNoBaseline()
 		basicCharge := touBill.TotalBasicCharge()
 		touTax := touBill.Taxes()
 		nbc := touBill.NonBypassableCharges()
