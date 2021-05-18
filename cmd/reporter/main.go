@@ -55,9 +55,8 @@ func main() {
 	_, _ = fmt.Fprintf(w, "Time\t%d\tDays\t\n", len(days))
 	_, _ = fmt.Fprintln(w)
 
-	domesticCost := costcalculator.CalculateDomesticCost(days)
-	_, _ = fmt.Fprintf(w, "Domestic est.\t%.2f\t$\t\n", domesticCost)
-	_, _ = fmt.Fprintln(w)
+	domesticBreakdown := costcalculator.CalculateDomesticForDays(days)
+	fmt.Printf("Domestic estimate: %+v\n", domesticBreakdown)
 
 	for _, plan := range []costcalculator.TouPlan{costcalculator.NewTouDAPlan(), costcalculator.NewTouDPrime(), costcalculator.NewTouD58()} {
 
