@@ -1,0 +1,50 @@
+# Please note that there may be discrepancies between your electric bill and what Sense reports due to data interruptions (such as Wi-Fi signal loss or loss of power) or other issues.
+DateTime,Device ID,Name,Device Type,Device Make,Device Model,Device Location,Avg Wattage,kWh
+2020-01-01 00:00:00,3a9fb50e,Amy’s nightstand,Light,Signify Netherlands B.V.,LCT014,Amy’s bedroom,3.497,0.003
+2020-01-01 00:00:00,63ac628e,Dryer,Dryer,,,,66.569,0.067
+2020-01-01 00:00:00,solar,Solar Production,Solar,,,,-0.471,-0.000
+2020-01-01 00:00:00,20beee2c,Hernan’s nightstand,Light,Signify Netherlands B.V.,LCT014,Hernan’s bedroom,3.497,0.003
+2020-01-01 00:00:00,810f6a9b,Amy’s Monitor,Smart Plug,,,,1.517,0.002
+2020-01-01 00:00:00,5c862749,Hernan’s desk,Power Strip,,,,25.318,0.025
+2020-01-01 00:00:00,9f0d5dcd,Hernan’s Computer,Smart Plug,,,,44.920,0.045
+2020-01-01 00:00:00,988cda20,Sonos Connect office,Speakers,,,,4.702,0.005
+2020-01-01 00:00:00,dfcadf6e,Stairway,Light,Signify Netherlands B.V.,LCT001,Upstairs hallway group,0.349,0.000
+2020-01-01 00:00:00,mains,Total Usage,,,,,962.448,0.962
+2020-01-01 00:00:00,always_on,Always On,AlwaysOn,,,,579.300,0.579
+2020-01-01 00:00:00,598bfee4,Garage door,Garage Door,,,,1.976,0.002
+2020-01-01 00:00:00,346b697e,Washer,Washer,,,,11.638,0.012
+2020-01-01 00:00:00,j7LumDTN,Dining group lights,Light,Philips,,Dining group,8.714,0.009
+2020-01-01 01:00:00,3a9fb50e,Amy’s nightstand,Light,Signify Netherlands B.V.,LCT014,Amy’s bedroom,0.079,0.000
+2020-01-01 01:00:00,63ac628e,Dryer,Dryer,,,,43.416,0.043
+2020-01-01 01:00:00,solar,Solar Production,Solar,,,,-0.661,-0.001
+2020-01-01 01:00:00,20beee2c,Hernan’s nightstand,Light,Signify Netherlands B.V.,LCT014,Hernan’s bedroom,0.079,0.000
+2020-01-01 01:00:00,810f6a9b,Amy’s Monitor,Smart Plug,,,,1.512,0.002
+2020-01-01 01:00:00,5c862749,Hernan’s desk,Power Strip,,,,18.596,0.019
+2020-01-01 01:00:00,9f0d5dcd,Hernan’s Computer,Smart Plug,,,,1.480,0.001
+2020-01-01 01:00:00,988cda20,Sonos Connect office,Speakers,,,,4.704,0.005
+2020-01-01 01:00:00,mains,Total Usage,,,,,862.615,0.863
+2020-01-01 01:00:00,always_on,Always On,AlwaysOn,,,,572.666,0.573
+2020-01-01 01:00:00,346b697e,Washer,Washer,,,,13.240,0.013
+2020-01-01 01:00:00,j7LumDTN,Dining group lights,Light,Philips,,Dining group,0.174,0.000
+2020-01-01 02:00:00,810f6a9b,Amy’s Monitor,Smart Plug,,,,1.523,0.002
+2020-01-01 02:00:00,5c862749,Hernan’s desk,Power Strip,,,,18.701,0.019
+2020-01-01 02:00:00,9f0d5dcd,Hernan’s Computer,Smart Plug,,,,1.477,0.001
+2020-01-01 02:00:00,988cda20,Sonos Connect office,Speakers,,,,4.696,0.005
+2020-01-01 02:00:00,mains,Total Usage,,,,,664.005,0.664
+2020-01-01 02:00:00,always_on,Always On,AlwaysOn,,,,569.333,0.569
+2020-01-01 02:00:00,solar,Solar Production,Solar,,,,-0.803,-0.001
+2020-01-01 03:00:00,810f6a9b,Amy’s Monitor,Smart Plug,,,,1.518,0.002
+2020-01-01 03:00:00,5c862749,Hernan’s desk,Power Strip,,,,18.653,0.019
+2020-01-01 03:00:00,9f0d5dcd,Hernan’s Computer,Smart Plug,,,,1.483,0.001
+2020-01-01 03:00:00,988cda20,Sonos Connect office,Speakers,,,,4.713,0.005
+2020-01-01 03:00:00,mains,Total Usage,,,,,637.823,0.638
+2020-01-01 03:00:00,always_on,Always On,AlwaysOn,,,,555.866,0.556
+2020-01-01 03:00:00,solar,Solar Production,Solar,,,,-1.042,-0.001
+2020-01-01 04:00:00,810f6a9b,Amy’s Monitor,Smart Plug,,,,1.522,0.002
+2020-01-01 04:00:00,5c862749,Hernan’s desk,Power Strip,,,,18.704,0.019
+2020-01-01 04:00:00,9f0d5dcd,Hernan’s Computer,Smart Plug,,,,1.478,0.001
+2020-01-01 04:00:00,988cda20,Sonos Connect office,Speakers,,,,4.718,0.005
+2020-01-01 04:00:00,dfcadf6e,Stairway,Light,Signify Netherlands B.V.,LCT001,Upstairs hallway group,0.128,0.000
+2020-01-01 04:00:00,mains,Total Usage,,,,,641.218,0.641
+2020-01-01 04:00:00,always_on,Always On,AlwaysOn,,,,544.566,0.545
+2020-01-01 04:00:00,solar,Solar Production,Solar,,,,-1.162,-0.001
