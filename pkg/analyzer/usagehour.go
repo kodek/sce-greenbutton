@@ -60,7 +60,7 @@ func AggregateIntoHourWindows(parsedFile csvparser.CsvFile) ([]UsageHour, error)
 	})
 
 	out := make([]UsageHour, len(hours))
-	for i, _ := range hours {
+	for i := range hours {
 		out[i] = &hours[i]
 	}
 	return out, nil

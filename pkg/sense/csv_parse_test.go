@@ -58,6 +58,7 @@ func TestParseCSV_SampleSucceeds(t *testing.T) {
 	assert.NoError(t, err)
 
 	got, err := ParseCSV(string(sample))
+	assert.NoError(t, err)
 
 	assert.Len(t, got, 48)
 }

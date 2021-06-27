@@ -86,7 +86,7 @@ func parseTimePeriod(timePeriod string) (time.Time, time.Time, error) {
 	noQuotes := removeQuotes(timePeriod)
 	split := strings.Split(noQuotes, "to")
 	if len(split) != 2 {
-		return time.Time{}, time.Time{}, errors.New(fmt.Sprintf("Expected time period with 2 dates, but got %d", len(split)))
+		return time.Time{}, time.Time{}, fmt.Errorf("expected time period with 2 dates, but got %d", len(split))
 	}
 	beforeStr := strings.TrimSpace(split[0])
 	afterStr := strings.TrimSpace(split[1])
@@ -119,7 +119,7 @@ func checkDiff(before time.Time, after time.Time, expectedDiff time.Duration) er
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("expected time period of %s between %s and %s, but got %s (with tz diff %s)", expectedDiff, before, after, diff, hourOffset))
+	return fmt.Errorf("expected time period of %s between %s and %s, but got %s (with tz diff %s)", expectedDiff, before, after, diff, hourOffset)
 }
 
 func parseUsage(usageStr string) (float64, error) {
